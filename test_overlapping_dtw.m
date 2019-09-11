@@ -1,27 +1,32 @@
-% Length of query
+
+% Input data 
+% Length of overlap
 N = 300;
+% Predicted length of overlap
+L = 300;
+% Length of time series
+Lq = 600;
+% Length reference
+Ld = 1200;
+% Sakoe-Chiba band
+R = 12;
 
-% first simple unit test, time series will have identical middle part
-% Query
-X = imgaussfilt(rand(N,1),2);
-Y = imgaussfilt(rand(N,1),2);
-Z = imgaussfilt(rand(N,1),2);
 
-X1 = [X; Y];
-X2 = [Y;Z];
+% generate the overlapping sample time series
+disp(strcat(['Generating and saving simulated time series']))
+tic
+[X1, X2, X,Y, Z1, Z2, flip, stPoint, issubseq] = gen_sample_overlap( N, L, Lq, Ld );
+time = toc;
+disp(strcat(['This took me ' num2str(time) ' seconds']))
 
-% save query
-fname = strcat(['query1.txt']);
-fileID = fopen(fname,'w');
-fprintf(fileID,'%2.5f ',X1);
-fclose(fileID);
-
-% save data
-fname = strcat(['data1.txt']);
-fileID = fopen(fname,'w');
-fprintf(fileID,'%2.5f ',X2);
-fclose(fileID);
-%     
+% mex the c function     
 mex 'OVERLAPPING_DTW_MEX.cpp';
- 
-[pos,score] = OVERLAPPING_DTW_MEX('data1.txt','query1.txt', 0.5,300);
+
+% generate overlap scores
+[ pos, scores ] = generate_overlap_scores( length(X1),L,R );
+
+
+
+
+
+%[pos,score] = OVERLAPPING_DTW_MEX('data1.txt','query1.txt', 300,12);

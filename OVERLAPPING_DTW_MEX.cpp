@@ -408,7 +408,7 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     int *order;          ///new order of the query
     double *u, *l, *qo, *uo, *lo,*tz,*cb, *cb1, *cb2,*u_d, *l_d;
 
-
+    /// name the parameters
     double d;
     long long i , j;
     double ex , ex2 , mean, std;
@@ -423,13 +423,15 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     /// For every EPOCH points, all cummulative values, such as ex (sum), ex2 (sum square), will be restarted for reducing the floating point error.
     int EPOCH = 100000;
 
+    /// Sakoe-Chiba band
     if (R<=1)
             r = floor(R*m);
 	else
             r = floor(R);
 
+    
      
-
+    /// check if the files can be opened
     fp = fopen(Data_File,"r");
     if( fp == NULL )
         error(2);
@@ -441,7 +443,7 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     /// start the clock
     t1 = clock();
 
-
+    
     /// malloc everything here
     q = (double *)malloc(sizeof(double)*m);
     if( q == NULL )
@@ -514,20 +516,25 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
 
 
     /// Read query file
-    bsf = INF;
+    bsf = INF; /// So this finds global solution
     i = 0;
     j = 0;
     ex = ex2 = 0;
 
+    /// three cases. Case 1: readfull file, then m=total size of query. Done, run the code with
+    /// m=fullsize
+    /// Case 2: read only first L elements. Done, run with m=L
+    /// Case 3: read only last L elements
     while(fscanf(qp,"%lf",&d) != EOF && i < m)
     {
-        ex += d;
+        ex += d;    /// if the numbers are very big, would have some numerical issues?
         ex2 += d*d;
         q[i] = d;
         i++;
     }
     fclose(qp);
 
+    
     /// Do z-normalize the query, keep in same array, q
     mean = ex/m;
     std = ex2/m;
@@ -535,6 +542,7 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     for( i = 0 ; i < m ; i++ )
          q[i] = (q[i] - mean)/std;
 
+    
     /// Create envelop of the query: lower envelop, l, and upper envelop, u
     lower_upper_lemire(q, m, r, l, u);
 
@@ -720,16 +728,18 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     free(u_buff);
 
     t2 = clock();
-    printf("\n");
+   /// printf("\n");
 /*
     /// Note that loc and i are long long.
     cout << "Location : " << loc << endl;
     cout << "Distance : " << sqrt(bsf) << endl;
     cout << "Data Scanned : " << i << endl;
     cout << "Total Execution Time : " << (t2-t1)/CLOCKS_PER_SEC << " sec" << endl;
-*/
+
+    */
     *y = loc;
     *s = sqrt(bsf);
+    
     /// printf is just easier for formating ;)
     /*
     printf("\n");
@@ -739,6 +749,7 @@ void cpp_dtw(char *Data_File, char *Query_File, int m, double R, double *y, doub
     printf("DTW Calculation     : %6.2f%%\n", 100-(((double)kim+keogh+keogh2)/i*100));
    */ 
     /// return 0;
+    
 }
 
 
@@ -758,6 +769,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /*Variable declarations as in C*/
   ///  char Data_File, Query_File;
     int M;
+    
+    
+    int L; /// length of the overlap
+
 	int buflen0,status0;
     int buflen1,status1;
 
@@ -770,13 +785,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     /* Check for proper number of arguments. */
     if (nrhs != 4) {
-        mexErrMsgTxt("Four inputs required.");
+        mexErrMsgTxt("Five inputs required.");
 	} 
     else if (nlhs > 2) {
         mexErrMsgTxt("Too many output arguments");
     }
     
-    M = mxGetScalar(prhs[2]);
+    M = mxGetScalar(prhs[2]); /// overlap length
     R = mxGetScalar(prhs[3]);
     
       /* Get the length of the input string. */
@@ -804,7 +819,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     mexPrintf("R: %4.3f\n", R);
     mexPrintf("Data_File: %s\n", input_buf0);
     mexPrintf("Query_File: %s\n", input_buf1);
-*/
+    */
     
 	plhs[0] = mxCreateDoubleMatrix(1, 1, mxREAL);
 	y = mxGetPr(plhs[0]);

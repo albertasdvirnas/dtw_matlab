@@ -12,7 +12,7 @@
 
     %%
     N = 300; % subsequence length
-    numRuns = 1000; % number runs
+    numRuns = 10; % number runs
     corPos = 10000; % correct position
     
     % found positions
